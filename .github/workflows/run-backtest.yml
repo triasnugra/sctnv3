@@ -1,0 +1,81 @@
+name: run-backtest
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Panjang periode replay (hari)"
+        default: "45"
+      step_hours:
+        description: "Jarak titik evaluasi (jam). Lebih besar = lebih cepat"
+        default: "1"
+      symbols:
+        description: "Override simbol, pisah koma (kosong = config)"
+        required: false
+        default: ""
+      demo:
+        description: "Data sintetis (tes pipeline)"
+        type: boolean
+        default: false
+      publish:
+        description: "Setelah selesai, jalankan run-analysis agar dashboard memuat hasil backtest"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: scalp-backtest
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Backtest walk-forward
+        env:
+          IN_DAYS: ${{ github.event.inputs.days }}
+          IN_STEP: ${{ github.event.inputs.step_hours }}
+          IN_SYMBOLS: ${{ github.event.inputs.symbols }}
+          IN_DEMO: ${{ github.event.inputs.demo }}
+        run: |
+          ARGS="--days ${IN_DAYS:-45} --step-hours ${IN_STEP:-1}"
+          if [ -n "$IN_SYMBOLS" ]; then ARGS="$ARGS --symbols $IN_SYMBOLS"; fi
+          if [ "$IN_DEMO" = "true" ]; then ARGS="$ARGS --demo"; fi
+          python -m src.backtest.run $ARGS
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: backtest-${{ github.run_number }}
+          path: |
+            output/backtest/
+            output/engine.log
+          if-no-files-found: ignore
+      - name: Commit hasil backtest
+        run: |
+          git config user.name "scalp-engine-bot"
+          git config user.email "scalp-engine-bot@users.noreply.github.com"
+          git add -f output/backtest/summary.json output/backtest/trades.csv 2>/dev/null || true
+          git diff --cached --quiet && echo "Tidak ada perubahan" && exit 0
+          git commit -m "chore: hasil backtest $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "Push gagal (percobaan $i), ulangi..."; sleep 5
+          done
+          echo "::warning::Push hasil backtest gagal setelah 3 percobaan"
+      - name: Publish dashboard (jalankan run-analysis)
+        if: ${{ github.event.inputs.demo != 'true' && github.event.inputs.publish != 'false' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run run-analysis.yml --ref "${GITHUB_REF_NAME}" -R "${GITHUB_REPOSITORY}"

@@ -1,0 +1,17 @@
+{
+ "updated": "2026-11-22T18:43:25+00:00",
+ "stats": {
+  "n": 0,
+  "status": "NO DATA"
+ },
+ "by_trigger": {},
+ "by_symbol": {},
+ "counts": {
+  "CLOSED": 0,
+  "OPEN": 0,
+  "WAITING": 0,
+  "CANCELLED": 0
+ },
+ "assumptions": "Simulasi konservatif (stop dulu bila ambigu), fee/slippage kasar, entry pending kedaluwarsa. Bukan hasil eksekusi nyata.",
+ "trades": []
+}

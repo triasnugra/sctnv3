@@ -1,0 +1,135 @@
+name: run-analysis
+
+on:
+  schedule:
+    - cron: "5 * * * *"        # tiap jam menit ke-5 (setelah candle H1 close). Tiap 4 jam: "5 */4 * * *"
+  push:
+    branches: [main, master]   # upload/perubahan kode otomatis membangun & mempublish dashboard
+    paths:
+      - "index.html"
+      - "src/**"
+      - "config/**"
+      - "requirements.txt"
+      - ".github/workflows/run-analysis.yml"
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: "Override simbol, pisah koma (kosong = config/symbols.yaml)"
+        required: false
+        default: ""
+      demo:
+        description: "Mode demo (data sintetis, tes pipeline; TIDAK menulis jurnal)"
+        type: boolean
+        default: false
+      commit_results:
+        description: "Commit jurnal & hasil forward test ke repo"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scalp-engine
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Unit & smoke tests
+        run: python -m unittest discover -s tests
+
+      - name: Run analysis
+        env:
+          INPUT_SYMBOLS: ${{ github.event.inputs.symbols }}
+          INPUT_DEMO: ${{ github.event.inputs.demo }}
+          LOG_LEVEL: INFO
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          ARGS="--no-archive"
+          if [ -n "$INPUT_SYMBOLS" ]; then ARGS="$ARGS --symbols $INPUT_SYMBOLS"; fi
+          if [ "$INPUT_DEMO" = "true" ]; then ARGS="$ARGS --demo"; fi
+          python -m src.main $ARGS
+
+      - name: Evaluasi forward test
+        if: ${{ github.event.inputs.demo != 'true' }}
+        continue-on-error: true
+        run: python -m src.evaluate.forward_test
+
+      - name: Bangun situs (dashboard)
+        if: always()
+        run: python -m src.site_builder
+
+      - name: Ringkasan di tab Summary
+        if: always()
+        run: |
+          if [ -f output/latest/report.md ]; then cat output/latest/report.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Upload artifact (report + chart + jurnal)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: scalp-analysis-${{ github.run_number }}
+          path: |
+            output/latest/
+            output/signal_log.csv
+            output/signal_log.legacy*.csv
+            output/forward_test.json
+            output/engine.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload artifact Pages
+        if: always()
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+      - name: Commit jurnal & hasil forward test (state kecil, tanpa PNG)
+        if: ${{ github.event.inputs.demo != 'true' && (github.event_name != 'workflow_dispatch' || github.event.inputs.commit_results != 'false') }}
+        run: |
+          git config user.name "scalp-engine-bot"
+          git config user.email "scalp-engine-bot@users.noreply.github.com"
+          git add output/signal_log.csv output/forward_test.json 2>/dev/null || true
+          git add output/signal_log.legacy*.csv 2>/dev/null || true
+          git diff --cached --quiet && echo "Tidak ada perubahan state" && exit 0
+          git commit -m "chore: jurnal & forward test $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "Push gagal (percobaan $i), ulangi..."; sleep 5
+          done
+          echo "::warning::Push jurnal gagal setelah 3 percobaan"
+
+  deploy:
+    needs: analyze
+    if: always() && needs.analyze.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

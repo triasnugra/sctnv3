@@ -1,0 +1,182 @@
+# =====================================================================
+# parameters.yaml — SEMUA parameter analisis yang bisa di-tune.
+# SEMUA angka di sini adalah HIPOTESIS operasional dari aturan diskresioner
+# CryptoEliz. Bukan angka "resmi" dan belum terbukti punya edge.
+# Cara membaca: section.default = nilai dasar; section.by_tf.<tf> = override per TF.
+# Ubah -> jalankan forward test -> evaluasi. Jangan tune berdasarkan 1-2 trade.
+# =====================================================================
+general:
+  drop_unclosed_candle: true     # analisis HANYA pakai candle yang sudah close
+  min_candles: {"1w": 20, "1d": 60, "4h": 120, "1h": 200, "15m": 200}
+
+indicators:
+  atr_period: 14
+  volume_sma: 20
+  volume_baseline: 50
+
+# ---- Bias (Weekly + Daily). Hanya arah, bukan trigger -----------------
+bias:
+  weekly_lookback: 26            # minggu untuk Weekly range/EQ
+  daily_lookback: 30             # hari untuk Daily range/EQ (key level)
+  daily_ema: 50
+  pivot_n: 3
+  neutral_threshold: 0.34        # |skor| < ini -> NEUTRAL
+  weights:
+    weekly_eq: 1.0               # close di atas/bawah EQ weekly range
+    weekly_prev_range: 1.0       # close vs high/low minggu sebelumnya
+    daily_eq: 1.5                # close di atas/bawah EQ daily range (key level)
+    daily_structure: 1.5         # HH+HL = +1 ; LH+LL = -1
+    daily_ema: 1.0
+
+# ---- Range / Box -------------------------------------------------------
+range:
+  timeframes: ["4h", "1h"]
+  default:
+    windows: [48, 72, 120, 168]  # kandidat panjang range (candle)
+    exclude_recent: 24           # candle terbaru TIDAK ikut membentuk box (supaya deviasi/breakout terbaca)
+    pivot_n: 3
+    min_touches: 2               # min pivot yang menyentuh tiap tepi
+    touch_tol_pct: 0.35          # toleransi sentuhan tepi (% harga)
+    min_width_pct: 1.5
+    max_width_pct: 12.0
+    max_drift_ratio: 0.6         # |close akhir - close awal| / tinggi box (anti trend-channel)
+    max_outside_close_frac: 0.03 # maks 3% candle close di luar box
+    edge_zone_frac: 0.2          # 20% atas = supply edge, 20% bawah = demand edge, sisanya = tengah (no-trade)
+  by_tf:
+    "4h": {windows: [30, 45, 60, 90], exclude_recent: 6, pivot_n: 2, touch_tol_pct: 0.8, min_width_pct: 3.0, max_width_pct: 25.0}
+
+# ---- Liquidity: Deviation + Reclaim (konfirmasi terkuat) --------------
+deviation:
+  default:
+    scan_bars: 12                # cari deviasi pada N candle terakhir
+    min_dev_pct: 0.15            # wick harus menembus level minimal segini
+    max_dev_pct: 3.0             # lebih dalam dari ini = dianggap breakout asli
+    reclaim_bars: 4              # harus close kembali di dalam dalam <= N candle
+    entry_zone_pct: 0.20         # zona entry = level +/- 0.20%
+    vol_spike_mult: 1.5          # volume candle deviasi >= 1.5 x SMA volume = bonus
+  by_tf:
+    "15m": {scan_bars: 32, min_dev_pct: 0.10, max_dev_pct: 2.0, reclaim_bars: 6, entry_zone_pct: 0.15}
+
+# ---- Breakout + Retest / Flip -----------------------------------------
+breakout_retest:
+  default:
+    scan_bars: 24
+    break_pct: 0.30              # close harus melewati level minimal segini
+    min_body_atr: 0.6            # body candle breakout >= 0.6 x ATR
+    min_volume_mult: 1.2         # volume breakout >= 1.2 x SMA volume
+    accept_bars: 2               # N candle setelah breakout harus tetap close di sisi baru
+    retest_zone_pct: 0.25
+    invalid_pct: 0.40            # close kembali menembus level sedalam ini -> flip gagal
+    entry_zone_pct: 0.20
+  by_tf:
+    "15m": {scan_bars: 48, break_pct: 0.20, retest_zone_pct: 0.15, invalid_pct: 0.30, entry_zone_pct: 0.15}
+
+# ---- Fibonacci 0.75 ----------------------------------------------------
+# Fib = LEVEL, bukan trigger. Jadi trigger hanya jika ada REAKSI candle di zona.
+fibonacci:
+  default:
+    pivot_n: 3
+    pivot_lookback: 150
+    min_impulse_pct: 5.0
+    level: 0.75
+    zone_half_width: 0.04        # zona = 0.71 .. 0.79
+    invalid_retrace: 0.90        # close lewat 0.90 = setup mati; juga acuan stop
+    touch_lookback: 3
+  by_tf:
+    "15m": {pivot_lookback: 200, min_impulse_pct: 2.5}
+
+# ---- Monday Range ------------------------------------------------------
+monday_range:
+  fallback_to_previous: true     # bila candle Senin berjalan belum close, pakai Monday minggu lalu
+  confluence_tol_pct: 0.30
+
+# ---- Three-tap & Wolf --------------------------------------------------
+three_tap:
+  default:
+    pivot_n: 3
+    pivot_lookback: 120
+    min_step_pct: 0.15
+    max_step_pct: 3.0
+    max_span_bars: 100
+    recent_bars: 6
+  by_tf:
+    "15m": {pivot_lookback: 200, min_step_pct: 0.10, max_step_pct: 1.5, max_span_bars: 160}
+
+wolf:
+  default:
+    pivot_n: 3
+    pivot_lookback: 150
+    max_span_bars: 160
+    overshoot_min_pct: 0.05
+    recent_bars: 6
+
+# ---- Fair Value Gap (konfirmasi tambahan saja) ------------------------
+fvg:
+  default:
+    max_age_bars: 48
+    min_gap_atr_mult: 0.25
+    touch_tol_pct: 0.15
+    touch_lookback: 3
+  by_tf:
+    "15m": {max_age_bars: 96}
+
+# ---- OBV ---------------------------------------------------------------
+obv:
+  default:
+    pivot_n: 3
+    divergence_lookback: 60
+    min_pivot_gap_bars: 5
+    max_pivot_gap_bars: 50
+    min_price_diff_pct: 0.05
+    recent_bars: 15
+    v_window: 24
+    v_min_swing_vol_mult: 3.0    # ayunan OBV >= 3 x rata2 volume candle
+    v_recovery_frac: 0.7         # pemulihan >= 70% dari ayunan
+    v_min_pos: 0.15              # titik balik V harus di 15%..85% window
+    v_max_pos: 0.85
+  by_tf:
+    "15m": {divergence_lookback: 80, v_window: 32}
+
+# ---- Scoring (transparan: jumlah poin = alasan) -----------------------
+scoring:
+  weights:
+    bias_aligned: 2
+    trigger_deviation_reclaim: 3
+    trigger_breakout_retest: 2
+    trigger_fib_075: 2
+    entry_zone_reached: 1
+    confluence_htf_range_edge: 1
+    confluence_monday_level: 1
+    confluence_fib_zone: 1
+    confirm_fvg: 1
+    confirm_obv_divergence: 1
+    confirm_obv_v: 1
+    confirm_three_tap: 1
+    confirm_wolf: 1
+    confirm_volume_spike: 1
+    penalty_btc_conflict: -1
+    penalty_neutral_bias: 0
+  min_score: 6
+  min_extra_items: 1             # minimal N item konfluensi/konfirmasi selain trigger
+  allow_counter_bias: false      # false: trade melawan bias HTF = veto
+  allow_pending: true            # izinkan limit order di retest (belum di zona)
+  max_pending_distance_atr: 3.0  # entry pending maksimal sejauh 3 x ATR dari harga
+  block_mid_range: true          # entry di tengah range = veto (kecuali breakout-retest)
+  confluence_tol_pct: 0.30
+  trigger_priority: ["deviation_reclaim", "breakout_retest", "fib_075"]
+  btc_conflict_threshold: 0.34
+
+chart:
+  timeframe: "1h"
+  follow_trigger_tf: true        # pakai TF trigger utama jika ada signal
+  candles: 160
+  dpi: 110
+  only_actionable: false
+
+backtest:
+  days: 45                     # panjang periode replay
+  step_hours: 1                # jarak antar titik evaluasi (as-of)
+
+notify:
+  enabled: true                # hanya aktif bila secret Telegram/Discord diisi
+  only_new_signals: true

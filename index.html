@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CryptoEliz Scalp Engine v2 (sctnv2) — Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📈%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f5f6f8;--card:#fff;--ink:#1b1f27;--mute:#6b7280;--line:#e5e7eb;--accent:#2563eb;
+  --long:#0f9d6b;--short:#d63a3a;--warn:#b7791f;--chip:#eef2f7;--shadow:0 1px 3px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0e1116;--card:#171b22;--ink:#e6e9ef;--mute:#98a2b3;--line:#2a313c;--accent:#5b9cff;
+  --long:#2fd59a;--short:#ff6b6b;--warn:#e0b25a;--chip:#222833;--shadow:none;}}
+:root[data-theme=dark]{--bg:#0e1116;--card:#171b22;--ink:#e6e9ef;--mute:#98a2b3;--line:#2a313c;--accent:#5b9cff;
+  --long:#2fd59a;--short:#ff6b6b;--warn:#e0b25a;--chip:#222833;--shadow:none}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font-size:20px;margin:0}
+h2{font-size:16px;margin:0 0 10px}
+h3{font-size:14px;margin:14px 0 6px}
+.sub{color:var(--mute);font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,input{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+input{cursor:text;min-width:140px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{background:var(--chip);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.stat .v{font-size:20px;font-weight:650;margin-top:2px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mute);font-weight:600;font-size:12px}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--chip)}
+tr.sel td{background:var(--chip)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--chip)}
+.b-long{color:var(--long)}.b-short{color:var(--short)}.b-no{color:var(--mute)}
+.b-warn{color:var(--warn)}
+.pos{color:var(--long)}.neg{color:var(--short)}
+.banner{border-left:4px solid var(--warn);background:var(--chip);padding:10px 12px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.banner.err{border-color:var(--short)}
+.banner.demo{border-color:var(--accent)}
+.two{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+img.chart{width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+ul{margin:4px 0 0 18px;padding:0}li{margin:2px 0}
+.bar{height:8px;border-radius:6px;background:var(--chip);overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;background:var(--accent)}
+.bar.ok>i{background:var(--long)}
+pre{white-space:pre-wrap;word-wrap:break-word;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;
+  background:var(--chip);padding:12px;border-radius:8px;max-height:640px;overflow:auto}
+svg.eq{width:100%;height:180px;background:var(--chip);border-radius:8px}
+.hidden{display:none}
+.kv td:first-child{color:var(--mute);width:42%}
+footer{color:var(--mute);font-size:12px;margin:20px 0 40px}
+a{color:var(--accent)}
+.mtf{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
+.mtf .badge{font-size:13px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+tr.now td{background:var(--chip);font-weight:650}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>📈 CryptoEliz Scalp Engine <span class="badge">v2</span></h1>
+      <div class="sub" id="meta">memuat…</div>
+    </div>
+    <div class="row">
+      <button id="btnRefresh" title="Muat ulang data">↻ Refresh</button>
+      <button id="btnTheme" title="Ganti tema">🌓</button>
+    </div>
+  </header>
+
+  <div id="banners"></div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="now" class="on">Signal Saat Ini</button>
+    <button data-tab="forward">Forward Test</button>
+    <button data-tab="backtest">Backtest</button>
+    <button data-tab="journal">Jurnal Signal</button>
+    <button data-tab="report">Laporan</button>
+    <button data-tab="about">Tentang</button>
+  </nav>
+
+  <section id="tab-now">
+    <div class="card">
+      <div class="grid" id="summary"></div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <h2 style="margin:0">Ringkasan per simbol</h2>
+        <div class="row">
+          <span id="filters"></span>
+          <input id="q" type="search" placeholder="cari simbol…" aria-label="cari simbol">
+        </div>
+      </div>
+      <div class="tw"><table id="sigTable"></table></div>
+    </div>
+    <div id="detail"></div>
+  </section>
+
+  <section id="tab-forward" class="hidden"></section>
+  <section id="tab-backtest" class="hidden"></section>
+  <section id="tab-journal" class="hidden"></section>
+  <section id="tab-report" class="hidden"></section>
+  <section id="tab-about" class="hidden"></section>
+
+  <footer>
+    ⚠️ Alat analisis berbasis aturan yang dioperasionalkan dari hipotesis. Tidak ada klaim profitabilitas, bukan nasihat finansial.
+    Validasi lewat paper-trading / forward test sebelum memakai modal nyata.
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- util ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const clear = el => { while (el.firstChild) el.removeChild(el.firstChild); return el; };
+const isNum = x => typeof x === "number" && isFinite(x);
+function fmtPrice(x) {
+  if (!isNum(x)) return "–";
+  const a = Math.abs(x);
+  if (a >= 1000) return x.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (a >= 1) return x.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  return x.toFixed(6);
+}
+const fmtN = (x, d = 2) => isNum(x) ? x.toFixed(d) : "–";
+const fmtPct = (x, d = 1) => isNum(x) ? (x * 100).toFixed(d) + "%" : "–";
+function fmtTs(s) {
+  if (!s) return "–";
+  const d = new Date(s);
+  if (isNaN(d)) return String(s);
+  return d.toISOString().replace("T", " ").slice(0, 16) + " UTC";
+}
+function ago(s) {
+  const d = new Date(s); if (isNaN(d)) return "";
+  const m = Math.round((Date.now() - d.getTime()) / 60000);
+  if (m < 1) return "baru saja";
+  if (m < 90) return m + " menit lalu";
+  if (m < 2880) return Math.round(m / 60) + " jam lalu";
+  return Math.round(m / 1440) + " hari lalu";
+}
+const rCls = r => isNum(r) ? (r > 0 ? "pos" : r < 0 ? "neg" : "") : "";
+function dirBadge(a) {
+  const c = a === "LONG" ? "b-long" : a === "SHORT" ? "b-short" : "b-no";
+  const i = a === "LONG" ? "🟢 " : a === "SHORT" ? "🔴 " : "⚪ ";
+  return h("span", { class: "badge " + c }, i + a);
+}
+function parseCSV(text) {
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cur); cur = ""; }
+    else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+    else if (ch !== "\r") cur += ch;
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  if (!rows.length) return [];
+  const head = rows[0];
+  return rows.slice(1).filter(r => r.length > 1).map(r => Object.fromEntries(head.map((k, i) => [k, r[i]])));
+}
+function table(cols, rows, opts = {}) {
+  const t = h("table");
+  t.append(h("thead", {}, h("tr", {}, cols.map(c => h("th", {}, c.label)))));
+  const tb = h("tbody");
+  rows.forEach(r => {
+    const tr = h("tr", { class: opts.onClick ? "click" : "" });
+    if (opts.onClick) tr.addEventListener("click", () => opts.onClick(r, tr));
+    cols.forEach(c => {
+      const v = c.render ? c.render(r) : r[c.key];
+      tr.append(h("td", { class: c.cls ? c.cls(r) : "" }, v == null ? "–" : v));
+    });
+    tb.append(tr);
+  });
+  if (!rows.length) tb.append(h("tr", {}, h("td", { colspan: cols.length, class: "sub" }, opts.empty || "Belum ada data.")));
+  t.append(tb);
+  return t;
+}
+function stat(k, v, cls) { return h("div", { class: "stat" }, h("div", { class: "k" }, k), h("div", { class: "v " + (cls || "") }, v)); }
+function kv(pairs) {
+  return h("table", { class: "kv" }, h("tbody", {}, pairs.filter(Boolean).map(([k, v]) => h("tr", {}, h("td", {}, k), h("td", {}, v)))));
+}
+function equitySVG(points) {
+  const W = 800, H = 180, P = 10;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("class", "eq"); svg.setAttribute("preserveAspectRatio", "none");
+  if (points.length < 2) {
+    const t = document.createElementNS(svg.namespaceURI, "text");
+    t.setAttribute("x", 20); t.setAttribute("y", 40); t.setAttribute("fill", "currentColor");
+    t.textContent = "Kurva ekuitas (R) muncul setelah ada ≥2 trade closed."; svg.append(t); return svg;
+  }
+  const ys = points.map(p => p), min = Math.min(0, ...ys), max = Math.max(0, ...ys), rng = (max - min) || 1;
+  const X = i => P + (W - 2 * P) * i / (points.length - 1), Y = v => H - P - (H - 2 * P) * (v - min) / rng;
+  const mk = (n, a) => { const e = document.createElementNS(svg.namespaceURI, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  svg.append(mk("line", { x1: P, x2: W - P, y1: Y(0), y2: Y(0), stroke: "#888", "stroke-dasharray": "4 4", "stroke-width": 1 }));
+  const color = points[points.length - 1] >= 0 ? "#0f9d6b" : "#d63a3a";
+  svg.append(mk("polyline", { points: points.map((v, i) => `${X(i)},${Y(v)}`).join(" "), fill: "none", stroke: color, "stroke-width": 2 }));
+  const lab = mk("text", { x: W - P - 4, y: 16, "text-anchor": "end", fill: "currentColor", "font-size": 13 });
+  lab.textContent = "Σ " + points[points.length - 1].toFixed(2) + " R"; svg.append(lab);
+  return svg;
+}
+
+/* ---------- data ---------- */
+const S = { chartTf: null, base: null, sig: null, ft: null, bt: null, log: [], report: "", filter: "all", q: "", sel: null, timer: null };
+async function fetchJSON(p) { const r = await fetch(S.base + p + "?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error(p + " → HTTP " + r.status); return r.json(); }
+async function fetchText(p) { const r = await fetch(S.base + p + "?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error(p + " → HTTP " + r.status); return r.text(); }
+async function maybe(fn) { try { return await fn(); } catch (e) { return null; } }
+
+async function detectBase() {
+  for (const b of ["data/", "output/"]) {
+    try { const r = await fetch(b + "latest/signals.json?t=" + Date.now(), { cache: "no-store" }); if (r.ok) return b; } catch (e) { /* lanjut */ }
+  }
+  return null;
+}
+async function loadAll() {
+  const bn = $("#banners"); clear(bn);
+  if (location.protocol === "file:") {
+    bn.append(h("div", { class: "banner err" }, "Halaman dibuka lewat file://. Browser memblokir pembacaan data. Jalankan: ",
+      h("code", {}, "python -m src.site_builder && python -m http.server -d site 8000"), " lalu buka http://localhost:8000"));
+  }
+  S.base = await detectBase();
+  if (!S.base) {
+    $("#meta").textContent = "data belum tersedia";
+    bn.append(h("div", { class: "banner err" }, "Belum ada data analisis (data/latest/signals.json). Jalankan workflow ‘run-analysis’ di tab Actions, lalu pastikan GitHub Pages: Settings → Pages → Source = GitHub Actions."));
+    return;
+  }
+  S.sig = await maybe(() => fetchJSON("latest/signals.json"));
+  S.ft = await maybe(() => fetchJSON("forward_test.json"));
+  S.bt = await maybe(() => fetchJSON("backtest/summary.json"));
+  const lg = await maybe(() => fetchText("signal_log.csv"));
+  S.log = lg ? parseCSV(lg).reverse() : [];
+  S.report = (await maybe(() => fetchText("latest/report.md"))) || "";
+  renderAll();
+}
+
+/* ---------- render ---------- */
+function renderMeta() {
+  const d = S.sig; if (!d) return;
+  $("#meta").textContent = `Analisis ${fmtTs(d.asof)} (${ago(d.asof)}) · config ${d.config_hash} · ${d.source_note ? d.source_note.replace(/\*/g, "") : ""}`;
+  const bn = $("#banners");
+  if (d.demo) bn.append(h("div", { class: "banner demo" }, "MODE DEMO — data sintetis, BUKAN pasar nyata. Hanya untuk menguji pipeline."));
+  const ageMin = (Date.now() - new Date(d.asof).getTime()) / 60000;
+  if (ageMin > 150 && !d.demo) bn.append(h("div", { class: "banner" }, `Data sudah ${ago(d.asof)}. Jadwal GitHub Actions bisa tertunda — jangan bertindak atas signal basi; cek chart & harga terkini.`));
+  const errs = Object.entries(d.errors || {});
+  if (errs.length) bn.append(h("div", { class: "banner err" }, "Gagal ambil/analisis: " + errs.map(([k, v]) => k + " (" + String(v).slice(0, 90) + ")").join("; ")));
+}
+function renderSummary() {
+  const g = $("#summary"); clear(g);
+  const sigs = (S.sig && S.sig.signals) || [];
+  const act = sigs.filter(s => s.action === "LONG" || s.action === "SHORT");
+  const bench = sigs.find(s => s.symbol === (S.sig && S.sig.benchmark));
+  g.append(stat("Signal aktif", `${act.length} / ${sigs.length}`, act.length ? "pos" : ""));
+  g.append(stat("LONG / SHORT", `${act.filter(s => s.action === "LONG").length} / ${act.filter(s => s.action === "SHORT").length}`));
+  g.append(stat("Bias BTC", bench ? bench.bias : "–"));
+  g.append(stat("Skor minimum", S.sig ? S.sig.min_score : "–"));
+  const ft = S.ft && S.ft.stats;
+  g.append(stat("Forward test", ft ? `${ft.n} trade · ${ft.status}` : "belum ada"));
+}
+function renderFilters() {
+  const f = $("#filters"); clear(f);
+  [["all", "Semua"], ["act", "Aktif"], ["no", "NO TRADE"]].forEach(([k, l]) =>
+    f.append(h("button", { class: S.filter === k ? "on" : "", onclick: () => { S.filter = k; renderFilters(); renderTable(); } }, l), " "));
+}
+function renderTable() {
+  const t = $("#sigTable"); clear(t);
+  let sigs = ((S.sig && S.sig.signals) || []).slice();
+  if (S.filter === "act") sigs = sigs.filter(s => s.action !== "NO TRADE");
+  if (S.filter === "no") sigs = sigs.filter(s => s.action === "NO TRADE");
+  if (S.q) sigs = sigs.filter(s => s.symbol.toLowerCase().includes(S.q.toLowerCase()));
+  const cols = [
+    { label: "Simbol", render: s => h("b", {}, s.symbol) },
+    { label: "Harga", render: s => fmtPrice(s.price) },
+    { label: "Bias HTF", render: s => s.bias },
+    { label: "Signal", render: s => s.error ? h("span", { class: "badge b-warn" }, "DATA ERROR") : dirBadge(s.action) },
+    { label: "Status", render: s => s.status && s.status !== "-" ? s.status : "–" },
+    { label: "Skor", render: s => s.error ? "–" : `${s.score}/${s.max_score}` },
+    { label: "Entry", render: s => s.plan ? fmtPrice(s.plan.entry) : "–" },
+    { label: "Stop", render: s => s.plan ? `${fmtPrice(s.plan.stop)} (${fmtN(s.plan.stop_pct)}%)` : "–" },
+    { label: "TP1", render: s => s.plan ? fmtPrice(s.plan.tp1) : "–" },
+    { label: "RR", render: s => s.plan ? fmtN(s.plan.blended_rr) : "–" },
+  ];
+  const tb = table(cols, sigs, { empty: "Tidak ada baris.", onClick: (s, tr) => { S.sel = s.symbol; renderTable(); renderDetail(); $("#detail").scrollIntoView({ behavior: "smooth", block: "start" }); } });
+  tb.querySelectorAll("tbody tr.click").forEach((tr, i) => { if (sigs[i] && sigs[i].symbol === S.sel) tr.classList.add("sel"); });
+  t.replaceWith(tb); tb.id = "sigTable";
+}
+function planCard(s) {
+  const p = s.plan; if (!p) return null;
+  return h("div", {},
+    h("h3", {}, "Rencana trade (scalp)"),
+    kv([
+      ["Arah / status", `${p.direction} / ${s.status}`],
+      ["Entry", fmtPrice(p.entry) + (p.entry_zone ? `  (zona ${fmtPrice(p.entry_zone[0])} – ${fmtPrice(p.entry_zone[1])})` : "")],
+      ["Stop (invalidasi)", `${fmtPrice(p.stop)}  (${fmtN(p.stop_pct)}%)`],
+      [`TP1 (${fmtN(p.tp1_close_pct, 0)}% posisi)`, `${fmtPrice(p.tp1)} · ${fmtN(p.rr1)}R · ${p.tp1_source}`],
+      ["Moonbag TP2", `${fmtPrice(p.tp2)} · ${fmtN(p.rr2)}R · ${p.tp2_source}`],
+      ["Setelah TP1", `stop → BE+ (${fmtPrice(p.be_stop)})`],
+      ["RR gabungan", fmtN(p.blended_rr)],
+      [`Ukuran (risiko ${fmtN(p.risk_amount)} USDT)`, `notional ${fmtN(p.notional)} · margin ${fmtN(p.margin)} · lev maks aman ${p.leverage}x`],
+      ["Estimasi likuidasi", fmtPrice(p.liq_price)],
+    ]),
+    p.notes && p.notes.length ? h("ul", { class: "sub" }, p.notes.map(n => h("li", {}, n))) : null);
+}
+
+const KL_COLOR = { day: "#fb8c00", week: "#1e88e5", month: "#8e24aa", monday: "#00acc1", year: "#6d4c41" };
+function indicatorCard(ind, price) {
+  if (!ind || !ind.timeframes || !Object.keys(ind.timeframes).length) return null;
+  const arrow = d => h("span", { class: d === 1 ? "pos" : "neg" }, d === 1 ? "▲ naik" : "▼ turun");
+  const rows = Object.entries(ind.timeframes).map(([tf, d]) => ({ tf, ...d }));
+  const cols = [
+    { label: "TF", render: r => h("b", {}, r.tf) },
+    { label: "RSI", render: r => r.rsi && isNum(r.rsi.value) ? `${fmtN(r.rsi.value, 1)} (${r.rsi.zone})` : "–",
+      cls: r => r.rsi && r.rsi.zone === "overbought" ? "neg" : r.rsi && r.rsi.zone === "oversold" ? "pos" : "" },
+    { label: "MACD", render: r => r.macd ? `${r.macd.state} · ${r.macd.zero}` : "–",
+      cls: r => r.macd && isNum(r.macd.hist) ? rCls(r.macd.hist) : "" },
+    { label: "EMA 12/26/50/100/200", render: r => r.ema ? `${(r.ema.stack || "").split(" (")[0]} · ${r.ema.vs_200 || ""}` : "–" },
+    { label: "Supertrend", render: r => r.supertrend ? h("span", {}, arrow(r.supertrend.dir),
+        ` (${fmtN(r.supertrend.dist_pct)}% dari garis` + (isNum(r.supertrend.last_flip_bars_ago) ? `, flip ${r.supertrend.last_flip_bars_ago} bar lalu` : "") + ")") : "–" },
+    { label: "OBV", render: r => r.obv ? r.obv.trend : "–", cls: r => r.obv ? (r.obv.trend === "naik" ? "pos" : "neg") : "" },
+    { label: "Volume", render: r => r.volume ? `${r.volume.state} (${fmtN(r.volume.ratio_vs_sma, 2)}× SMA)` : "–" },
+    { label: "UCTS≈ (proksi)", render: r => r.ucts_proxy ? `${r.ucts_proxy.side} · ${r.ucts_proxy.bars_ago} bar lalu` : "–",
+      cls: r => r.ucts_proxy ? (r.ucts_proxy.side === "BUY" ? "pos" : "neg") : "" },
+  ];
+  const box = h("div", { style: "margin-top:14px" }, h("h3", {}, "Indikator pada grafik (informasi saja — tidak masuk skor)"));
+  const mtf = Object.entries(ind.mtf_supertrend || {});
+  if (mtf.length) box.append(h("div", { class: "mtf" }, h("span", { class: "sub" }, "Supertrend multi-TF:"),
+    mtf.map(([tf, d]) => h("span", { class: "badge " + (d === 1 ? "b-long" : "b-short") }, `${tf} ${d === 1 ? "▲" : "▼"}`))));
+  box.append(h("div", { class: "tw" }, table(cols, rows)));
+  const vpRow = rows.find(r => r.tf === ind.primary_tf && r.volume_profile) || rows.find(r => r.volume_profile);
+  const vp = vpRow && vpRow.volume_profile;
+  const left = h("div"), right = h("div");
+  if (vp) left.append(h("h3", {}, `Volume Profile (${vpRow.tf}, ${vp.bars} candle)`), kv([
+    ["POC", fmtPrice(vp.poc)], ["VAH / VAL", `${fmtPrice(vp.vah)} / ${fmtPrice(vp.val)}`],
+    ["Posisi harga", `${vp.position} (${fmtN(vp.dist_poc_pct)}% dari POC)`]]));
+  const kl = (ind.key_levels || []).map(k => ({ ...k }));
+  if (kl.length) {
+    if (isNum(price)) kl.push({ now: true, label: "▶ Harga sekarang", price, dist_pct: 0 });
+    kl.sort((a, b) => b.price - a.price);
+    right.append(h("h3", {}, "Key Levels (Spaceman BTC IDWM)"), h("div", { class: "tw", style: "max-height:360px;overflow:auto" }, table([
+      { label: "Level", render: k => k.now ? k.label : h("span", {}, h("span", { class: "dot", style: `background:${KL_COLOR[k.group] || "#888"}` }), k.name) },
+      { label: "Harga", render: k => fmtPrice(k.price) },
+      { label: "Jarak", render: k => k.now ? "–" : (k.dist_pct > 0 ? "+" : "") + fmtN(k.dist_pct) + "%", cls: k => k.now ? "" : rCls(k.dist_pct) },
+    ], kl)));
+  }
+  if (vp || kl.length) box.append(h("div", { class: "two" }, left, right));
+  box.append(h("div", { class: "sub", style: "margin-top:8px" }, ind.note || ""));
+  return box;
+}
+function renderDetail() {
+  const box = clear($("#detail"));
+  const s = ((S.sig && S.sig.signals) || []).find(x => x.symbol === S.sel);
+  if (!s) { box.append(h("div", { class: "sub" }, "Klik baris simbol untuk melihat detail, chart, alasan skor, dan rencana trade.")); return; }
+  const c = s.context || {};
+  const card = h("div", { class: "card" });
+  card.append(h("div", { class: "row", style: "justify-content:space-between" },
+    h("h2", { style: "margin:0" }, s.symbol + " — ", dirBadge(s.action), s.status && s.status !== "-" ? " (" + s.status + ")" : ""),
+    h("span", { class: "sub" }, `harga ${fmtPrice(s.price)} · bias HTF ${s.bias} (${fmtN(s.bias_score)}) · skor ${s.score}/${s.max_score}`)));
+  if (s.error) { card.append(h("div", { class: "banner err" }, "Data/analisis gagal: " + s.error)); box.append(card); return; }
+  const left = h("div"), right = h("div");
+  const charts = c.charts && Object.keys(c.charts).length ? c.charts : (c.chart ? { [c.chart_tf || "1h"]: c.chart } : {});
+  const order = ["15m", "1h", "4h"], ctfs = [...order.filter(t => charts[t]), ...Object.keys(charts).filter(t => !order.includes(t))];
+  if (ctfs.length) {
+    if (!ctfs.includes(S.chartTf)) S.chartTf = (c.chart_tf && charts[c.chart_tf]) ? c.chart_tf : ctfs[0];
+    const src = S.base + "latest/" + charts[S.chartTf] + "?t=" + Date.now();
+    left.append(
+      h("div", { class: "row", style: "margin-bottom:8px" }, h("span", { class: "sub" }, "Timeframe chart:"),
+        ctfs.map(t => h("button", { class: t === S.chartTf ? "on" : "", onclick: () => { S.chartTf = t; renderDetail(); } }, t)),
+        h("a", { href: src, target: "_blank", rel: "noopener", class: "sub" }, "buka ukuran penuh")),
+      h("img", { class: "chart", src, alt: `chart ${s.symbol} ${S.chartTf}`, loading: "lazy" }));
+  } else left.append(h("div", { class: "sub" }, "Chart tidak dibuat untuk simbol ini."));
+  if (c.bias_summary) left.append(h("h3", {}, "Konteks"), h("div", {}, c.bias_summary));
+  if (c.bias_components) left.append(h("ul", {}, c.bias_components.map(b => h("li", {}, `${b.name}: `, h("b", { class: rCls(b.value) }, b.value > 0 ? "+1" : b.value < 0 ? "−1" : "0"), ` — ${b.note}`))));
+  (c.ranges || []).forEach(r => left.append(h("div", { class: "sub" }, `Range ${r.tf}: ${fmtPrice(r.low)} – ${fmtPrice(r.high)} (lebar ${fmtN(r.width_pct, 1)}%) · harga: ${r.position}`)));
+  if (c.monday) left.append(h("div", { class: "sub" }, `Monday${c.monday.is_previous ? " (minggu lalu)" : ""}: ${fmtPrice(c.monday.low)} – ${fmtPrice(c.monday.high)}`));
+  right.append(h("h3", { style: "margin-top:0" }, "Alasan"), h("ul", {}, (s.reasons || []).map(r => h("li", {}, r))));
+  if (s.vetoes && s.vetoes.length) right.append(h("h3", {}, "Veto / penghambat"), h("ul", {}, s.vetoes.map(v => h("li", {}, v))));
+  if (s.score_items && s.score_items.length) {
+    right.append(h("h3", {}, "Rincian skor"));
+    const tw = h("div", { class: "tw" }, table(
+      [{ label: "Item", key: "label" }, { label: "Poin", render: i => (i.points > 0 ? "+" : "") + i.points, cls: i => rCls(i.points) }, { label: "Grup", key: "group" }],
+      s.score_items));
+    right.append(tw, h("div", { class: "sub" }, `Total ${s.score} (minimum ${s.min_score})`));
+  }
+  right.append(planCard(s));
+  if (s.warnings && s.warnings.length) right.append(h("h3", {}, "Peringatan"), h("ul", {}, s.warnings.map(w => h("li", {}, "⚠️ " + w))));
+  if (s.watch && s.watch.length) right.append(h("h3", {}, "Watchlist (jika–maka)"), h("ul", {}, s.watch.map(w => h("li", {}, w))));
+  card.append(h("div", { class: "two", style: "margin-top:10px" }, left, right));
+  card.append(indicatorCard(c.indicators, s.price));
+  box.append(card);
+}
+
+function readinessBars(st) {
+  const t = st.targets || {}, r = st.readiness || {};
+  const bar = (label, val, target, ok, txt) => h("div", { style: "margin-bottom:10px" },
+    h("div", { class: "row", style: "justify-content:space-between" }, h("span", {}, label), h("span", { class: "sub" }, txt)),
+    h("div", { class: "bar " + (ok ? "ok" : "") }, h("i", { style: `width:${Math.min(100, 100 * val / target).toFixed(0)}%` })));
+  return h("div", {},
+    bar("Jumlah trade closed", st.n, t.min_trades || 150, r.trades, `${st.n} / ${t.min_trades}`),
+    bar("Rentang waktu (minggu)", st.weeks || 0, t.min_weeks || 20, r.weeks, `${fmtN(st.weeks, 1)} / ${t.min_weeks}`),
+    h("div", { class: "sub" }, "CI95 batas bawah expectancy > 0: ", h("b", { class: r.ci_lower_positive ? "pos" : "neg" }, r.ci_lower_positive ? "ya" : "belum"),
+      " · Profit factor ≥ ", t.min_profit_factor, ": ", h("b", { class: r.profit_factor ? "pos" : "neg" }, r.profit_factor ? "ya" : "belum")));
+}
+function statsGrid(st) {
+  if (!st || !st.n) return h("div", { class: "sub" }, "Belum ada trade closed.");
+  return h("div", { class: "grid" },
+    stat("Trade closed", st.n), stat("Win rate", fmtPct(st.win_rate)),
+    stat("Expectancy (R)", fmtN(st.avg_r, 3), rCls(st.avg_r)),
+    stat("Total R", fmtN(st.total_r), rCls(st.total_r)),
+    stat("Profit factor", isNum(st.profit_factor) ? fmtN(st.profit_factor) : "–"),
+    stat("SQN", isNum(st.sqn) ? fmtN(st.sqn) : "–"),
+    stat("CI95 expectancy", isNum(st.ci_low) ? `${fmtN(st.ci_low, 2)} … ${fmtN(st.ci_high, 2)}` : "–"),
+    stat("Max drawdown (R)", fmtN(st.max_drawdown_r)),
+    stat("Status", st.status, st.status === "PASS" ? "pos" : st.status === "FAIL" ? "neg" : ""));
+}
+function groupTable(title, g) {
+  const rows = Object.entries(g || {}).map(([k, v]) => ({ k, ...v }));
+  if (!rows.length) return null;
+  return h("div", {}, h("h3", {}, title), h("div", { class: "tw" }, table([
+    { label: "Grup", key: "k" }, { label: "N", key: "n" }, { label: "Win rate", render: r => fmtPct(r.win_rate) },
+    { label: "Avg R", render: r => fmtN(r.avg_r, 3), cls: r => rCls(r.avg_r) },
+    { label: "PF", render: r => isNum(r.profit_factor) ? fmtN(r.profit_factor) : "–" }, { label: "Total R", render: r => fmtN(r.total_r) }], rows)));
+}
+function tradesTable(trades) {
+  return h("div", { class: "tw" }, table([
+    { label: "Waktu signal", render: t => fmtTs(t.asof) }, { label: "Simbol", key: "symbol" },
+    { label: "Arah", render: t => dirBadge(t.direction) }, { label: "Trigger", render: t => `${t.trigger} [${t.tf}]` },
+    { label: "Status", key: "status" }, { label: "Hasil", render: t => t.outcome || t.reason || "–" },
+    { label: "R", render: t => isNum(t.r) ? fmtN(t.r, 2) : "–", cls: t => rCls(t.r) },
+  ], trades.slice().reverse().slice(0, 150), { empty: "Belum ada trade." }));
+}
+function renderForward() {
+  const el = clear($("#tab-forward"));
+  const d = S.ft;
+  const c = h("div", { class: "card" }, h("h2", {}, "Forward test (hasil simulasi dari signal live)"));
+  if (!d) {
+    c.append(h("div", { class: "sub" }, "Belum ada data. Evaluator berjalan otomatis di workflow setelah ada signal tercatat di jurnal."));
+    el.append(c); return;
+  }
+  c.append(h("div", { class: "banner" }, d.assumptions || ""));
+  c.append(statsGrid(d.stats));
+  const closed = (d.trades || []).filter(t => t.status === "CLOSED");
+  const eq = []; let cum = 0; closed.forEach(t => { cum += t.r; eq.push(cum); });
+  c.append(h("h3", {}, "Kesiapan (kriteria sampel)"), readinessBars(d.stats), h("h3", {}, "Kurva ekuitas (R)"), equitySVG(eq));
+  if (d.stats && d.stats.status === "UNVERIFIABLE") c.append(h("div", { class: "banner" }, "Status UNVERIFIABLE: sampel belum cukup — jangan menyimpulkan ada/tidaknya edge dari angka di atas."));
+  el.append(c);
+  const cnt = d.counts || {};
+  el.append(h("div", { class: "card" }, h("h2", {}, `Trade (${cnt.CLOSED || 0} closed · ${cnt.OPEN || 0} open · ${cnt.WAITING || 0} menunggu · ${cnt.CANCELLED || 0} batal)`), tradesTable(d.trades || [])));
+  const gt = [groupTable("Per trigger", d.by_trigger), groupTable("Per simbol", d.by_symbol)].filter(Boolean);
+  if (gt.length) el.append(h("div", { class: "card" }, gt));
+}
+function renderBacktest() {
+  const el = clear($("#tab-backtest"));
+  const d = S.bt;
+  const c = h("div", { class: "card" }, h("h2", {}, "Backtest walk-forward"));
+  if (!d) {
+    c.append(h("div", { class: "sub" }, "Belum ada backtest. Jalankan workflow ‘run-backtest’ di tab Actions."));
+    el.append(c); return;
+  }
+  if (d.demo) c.append(h("div", { class: "banner demo" }, "Backtest ini memakai DATA SINTETIS (demo) — tidak bermakna."));
+  c.append(h("div", { class: "sub" }, `Periode ${fmtTs(d.period[0])} → ${fmtTs(d.period[1])} · ${d.days} hari · step ${d.step_hours} jam · ${d.symbols.length} simbol · config ${d.config_hash} · dibuat ${fmtTs(d.generated)}`));
+  c.append(h("div", { class: "banner" }, d.warning || ""), statsGrid(d.stats));
+  const eq = (d.equity || []).map(e => e.r);
+  c.append(h("h3", {}, "Kurva ekuitas (R)"), equitySVG(eq));
+  const cnt = d.counts || {};
+  c.append(h("div", { class: "sub" }, `Signal unik: ${(cnt.CLOSED || 0) + (cnt.OPEN || 0) + (cnt.WAITING || 0) + (cnt.CANCELLED || 0)} · closed ${cnt.CLOSED || 0} · batal ${cnt.CANCELLED || 0}`));
+  el.append(c);
+  const gt = [groupTable("Per trigger", d.by_trigger), groupTable("Per simbol", d.by_symbol), groupTable("Per arah", d.by_direction)].filter(Boolean);
+  if (gt.length) el.append(h("div", { class: "card" }, gt));
+}
+function renderJournal() {
+  const el = clear($("#tab-journal"));
+  const rows = S.log.slice(0, 200);
+  el.append(h("div", { class: "card" }, h("h2", {}, `Jurnal signal (${S.log.length} tercatat; menampilkan 200 terbaru)`),
+    h("div", { class: "sub" }, "Hanya signal LONG/SHORT yang baru pertama kali muncul dicatat (dedup per kejadian setup). Sumber untuk forward test."),
+    h("div", { class: "tw" }, table([
+      { label: "Waktu", render: r => fmtTs(r.asof_utc) }, { label: "Simbol", key: "symbol" },
+      { label: "Arah", render: r => dirBadge(r.action) }, { label: "Status", key: "status" }, { label: "Skor", key: "score" },
+      { label: "Entry", render: r => fmtPrice(parseFloat(r.entry)) }, { label: "Stop", render: r => fmtPrice(parseFloat(r.stop)) },
+      { label: "TP1", render: r => fmtPrice(parseFloat(r.tp1)) }, { label: "RR", render: r => fmtN(parseFloat(r.blended_rr)) },
+      { label: "Trigger", render: r => `${r.trigger} [${r.trigger_tf}]` }, { label: "Bias", key: "bias" },
+    ], rows, { empty: "Jurnal masih kosong (belum ada signal aktif)." }))));
+}
+function renderReport() {
+  const el = clear($("#tab-report"));
+  el.append(h("div", { class: "card" }, h("h2", {}, "Laporan terbaru (Markdown)"),
+    h("div", { class: "row" }, S.base ? h("a", { href: S.base + "latest/report.md", target: "_blank", rel: "noopener" }, "buka report.md") : null,
+      S.base ? h("a", { href: S.base + "latest/signals.json", target: "_blank", rel: "noopener" }, "signals.json") : null,
+      S.base ? h("a", { href: S.base + "signal_log.csv", target: "_blank", rel: "noopener" }, "signal_log.csv") : null),
+    h("pre", {}, S.report || "Laporan belum tersedia.")));
+}
+function renderAbout() {
+  const el = clear($("#tab-about"));
+  el.append(h("div", { class: "card" },
+    h("h2", {}, "Tentang mesin ini"),
+    h("ul", {},
+      h("li", {}, "Trade di tepi range, bukan di tengah. Trigger dulu, bukan prediksi. Invalidasi sebelum target."),
+      h("li", {}, "Bias (Weekly+Daily) dipisah dari trigger (1H/15m). Diam juga posisi — default NO TRADE."),
+      h("li", {}, "Skor transparan: setiap poin = satu alasan (lihat Rincian skor). Tidak ada black-box."),
+      h("li", {}, "Semua angka parameter adalah HIPOTESIS di config/parameters.yaml; belum terbukti punya edge."),
+      h("li", {}, "Forward test: ≥150 trade, ≥20 minggu, CI95 expectancy > 0, PF ≥ 1.2 — sebelum itu status UNVERIFIABLE."),
+      h("li", {}, "Liquidity heatmap & opini makro tidak pernah dipakai sebagai trigger."),
+      h("li", {}, "v2: chart memuat MACD, OBV, RSI, EMA 12/26/50/100/200, Supertrend 10/3, Volume (+Volume Profile), Spaceman BTC Key Levels, dan UCTS≈."),
+      h("li", {}, "Indikator = TAMPILAN SAJA (tidak masuk skor/veto/signal). ‘95% price action, indikator 5%’."),
+      h("li", {}, "UCTS≈ adalah PROKSI terbuka (Supertrend flip + momentum MACD). UCTS asli (CryptoNTez) invite-only, kodenya tidak bisa direplikasi persis.")),
+    h("p", { class: "sub" }, "Dashboard ini statis: membaca data/latest/signals.json, forward_test.json, backtest/summary.json, dan signal_log.csv yang dibangun oleh GitHub Actions.")));
+}
+function renderAll() {
+  const bn = $("#banners"); clear(bn);
+  renderMeta(); renderSummary(); renderFilters(); renderTable(); renderDetail();
+  renderForward(); renderBacktest(); renderJournal(); renderReport(); renderAbout();
+}
+
+/* ---------- events ---------- */
+$("#tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("section[id^=tab-]").forEach(s => s.classList.toggle("hidden", s.id !== "tab-" + b.dataset.tab));
+  try { location.hash = b.dataset.tab; } catch (err) { /* abaikan */ }
+});
+$("#q").addEventListener("input", e => { S.q = e.target.value; renderTable(); });
+$("#btnRefresh").addEventListener("click", () => loadAll());
+$("#btnTheme").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("theme", next); } catch (e) { /* abaikan */ }
+});
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) { /* abaikan */ }
+const initTab = (location.hash || "").replace("#", "");
+if (initTab && document.querySelector(`#tabs button[data-tab="${initTab}"]`)) document.querySelector(`#tabs button[data-tab="${initTab}"]`).click();
+loadAll();
+S.timer = setInterval(loadAll, 5 * 60 * 1000);
+</script>
+</body>
+</html>

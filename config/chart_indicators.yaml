@@ -1,0 +1,68 @@
+# =====================================================================
+# chart_indicators.yaml — indikator pada GRAFIK (sctnv2)
+#
+# TAMPILAN & INFORMASI SAJA:
+#   - TIDAK dipakai skor / veto / signal / risk plan.
+#   - TIDAK masuk config_hash (mengubah file ini tidak mengubah identitas forward test).
+# Filosofi @eliz883: "indikator mengerjakan 5% — 95% price action". Jadi indikator hanya konteks visual.
+# Hapus/ubah nilai di sini untuk menyalakan/mematikan; kunci yang hilang memakai default bawaan kode.
+# =====================================================================
+enabled: true
+
+extra_timeframes: ["15m", "1h", "4h"]    # chart yang dibuat per simbol (TF utama otomatis ikut; dashboard punya tombol 15m / 1h / 4h)
+summary_timeframes: ["15m", "1h", "4h"]  # TF yang dirangkum di tabel indikator dashboard & laporan
+mtf_timeframes: ["15m", "1h", "4h", "1d"] # strip arah Supertrend multi-TF ("safeguard" ala UCTS)
+
+panels:                                   # panel di bawah chart harga
+  volume: true
+  obv: true
+  rsi: true
+  macd: true
+
+ema:
+  enabled: true
+  periods: [12, 26, 50, 100, 200]
+
+supertrend:
+  enabled: true
+  period: 10                              # default TradingView / yang disebut di tweet 2022
+  multiplier: 3.0
+
+rsi:
+  period: 14
+  overbought: 70
+  oversold: 30
+
+macd:
+  fast: 12
+  slow: 26
+  signal: 9
+
+volume:
+  sma: 20
+
+volume_profile:                           # range-terlihat (candle yang tampil di chart)
+  enabled: true
+  bins: 48
+  value_area: 0.70
+  width_frac: 0.14                        # lebar histogram maksimum sebagai fraksi lebar chart
+
+# Spaceman BTC Key Levels (IDWM): Open/High/Low/Mid per Day/Week/Month + Monday + Year Open
+key_levels:
+  enabled: true
+  show:
+    day:    [open, high, low]
+    week:   [open, high, low, mid]
+    month:  [open, high, low, mid]
+    monday: [high, low, mid]
+    year:   [open]
+
+# UCTS (Ultimate Crypto Trading Strategy, CryptoNTez) adalah skrip TradingView INVITE-ONLY (kode tertutup).
+# Logikanya TIDAK bisa direplikasi persis. Yang tersedia di sini adalah PROKSI terbuka:
+#   Buy  = Supertrend berbalik naik + histogram MACD sedang naik
+#   Sell = Supertrend berbalik turun + histogram MACD sedang turun
+# Label di chart: "UCTS≈ (proksi)". Jangan dianggap sama dengan sinyal UCTS asli.
+ucts_proxy:
+  enabled: true
+  use_ema_filter: false                   # true: Buy hanya jika close > EMA filter, Sell hanya jika close < EMA filter
+  ema_filter_period: 50

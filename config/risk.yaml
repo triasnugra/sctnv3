@@ -1,0 +1,57 @@
+# =====================================================================
+# risk.yaml — manajemen posisi & filter konteks (semua = HIPOTESIS)
+# Prinsip: lebih baik miss peluang daripada kena likuidasi.
+# =====================================================================
+account:
+  equity_usdt: 1000            # contoh saja; ganti sesuai modal paper-trade
+  risk_per_trade_pct: 1.0
+
+stop:
+  max_stop_pct: 6.0            # HARD: stop lebih lebar dari ini -> NO TRADE (bukan dilebarkan)
+  preferred_stop_pct_range: [3.0, 6.0]   # informasional (catatan di laporan)
+  min_stop_pct_floor: 0.7      # stop struktural yang lebih rapat dari ini dilebarkan (hindari noise)
+  max_fee_r: 0.15             # veto bila fee roundtrip > 0.15R (stop terlalu rapat -> fee memakan edge)
+  buffer_pct: 0.15             # buffer di luar titik invalidasi (% harga)
+  buffer_atr_mult: 0.25        # atau 0.25 x ATR(TF trigger); dipakai yang lebih besar
+
+targets:
+  tp1_min_r: 1.2               # level struktur dipakai jadi TP1 bila R >= ini
+  tp1_fallback_r: 1.5          # bila tidak ada level struktur yang cocok
+  tp2_min_r: 2.5
+  tp2_fallback_r: 3.0
+  tp2_min_gap_r: 0.5           # TP2 minimal 0.5R di luar TP1 (hindari TP1≈TP2)
+  tp1_close_pct: 60            # 50-70% ditutup di TP1; sisanya moonbag
+  be_buffer_pct: 0.10          # setelah TP1: stop dipindah ke BE + buffer ini
+  min_blended_rr: 1.5          # RR gabungan minimum (invalidasi sebelum target)
+
+leverage:
+  max_leverage: 10
+  maintenance_margin_rate: 0.005
+  liq_distance_vs_stop_mult: 2.0   # jarak likuidasi minimal = 2 x jarak stop
+
+filters:
+  low_volume:
+    enabled: true
+    timeframe: "1h"
+    recent_candles: 3
+    baseline_candles: 50
+    min_ratio: 0.5             # rata2 volume 3 candle terakhir / baseline < 0.5 -> blok entry
+  monthly_close:
+    enabled: true
+    hours_before: 12           # blok 12 jam sebelum pergantian bulan (UTC)
+    hours_after: 2
+  # Event besar (FOMC, CPI, dll) diisi MANUAL oleh Anda — tidak ada tanggal hardcode.
+  # Format waktu UTC ISO-8601. Contoh (hapus tanda # dan isi tanggal real):
+  # event_blackouts:
+  #   - {name: "FOMC", start_utc: "YYYY-MM-DDTHH:MM:00Z", end_utc: "YYYY-MM-DDTHH:MM:00Z"}
+  event_blackouts: []
+
+# Evaluasi forward test & backtest (simulasi hasil trade dari plan signal)
+evaluation:
+  fee_pct_roundtrip: 0.10      # fee + slippage kasar, % notional (dikonversi ke R: fee / stop%)
+  pending_expiry_hours: 24     # limit pending dibatalkan bila belum terisi
+  max_hold_hours: 72           # posisi ditutup paksa (mark-to-market) setelah ini
+  min_trades: 150              # kriteria kesiapan (Van Tharp style)
+  min_weeks: 20
+  min_profit_factor: 1.2
+  ci_z: 1.96                   # 95% CI rata-rata R

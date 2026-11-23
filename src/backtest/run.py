@@ -24,6 +24,7 @@ from ..evaluate.simulator import simulate_trade
 from ..evaluate.stats import compute_stats, group_stats
 from ..logging_setup import setup_logging
 from ..signal.signal_engine import evaluate_symbol
+from ..data.universe import hash_basis
 from ..utils import config_hash, to_jsonable, utcnow
 
 log = logging.getLogger("engine.backtest")
@@ -125,7 +126,7 @@ def run(argv=None) -> int:
         c += t["r"]
         eq.append({"t": t["exit_time"], "r": round(c, 3)})
     summary = {"generated": now, "demo": bool(a.demo), "days": days, "step_hours": step, "symbols": symbols,
-               "period": [str(asofs[0]), str(asofs[-1])], "config_hash": config_hash(cfg.symbols_cfg, cfg.params, cfg.risk),
+               "period": [str(asofs[0]), str(asofs[-1])], "config_hash": config_hash(hash_basis(cfg.symbols_cfg, False), cfg.params, cfg.risk),
                "stats": stats, "by_trigger": group_stats(closed, "trigger", ev), "by_symbol": group_stats(closed, "symbol", ev),
                "by_direction": group_stats(closed, "direction", ev),
                "counts": {k: sum(1 for t in trades if t["status"] == k) for k in ("CLOSED", "OPEN", "WAITING", "CANCELLED")},

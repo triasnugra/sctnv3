@@ -21,6 +21,7 @@ from .data.synthetic import DemoSource
 from .logging_setup import setup_logging
 from .models import Signal, SymbolAnalysis
 from .notify import send_alerts
+from .data.universe import hash_basis, resolve_universe, scanner_active
 from .report.chart_generator import chart_timeframe, generate_chart
 from .report.generate_report import build_report
 from .report.indicator_suite import build_suites, summarize_symbol
@@ -87,7 +88,8 @@ def run(args) -> int:
         return 2
 
     now = utcnow().floor("s")
-    chash = config_hash(cfg.symbols_cfg, cfg.params, cfg.risk)
+    use_scanner = scanner_active(cfg) and not args.demo
+    chash = config_hash(hash_basis(cfg.symbols_cfg, use_scanner), cfg.params, cfg.risk)
     dcfg = cfg.symbols_cfg.get("data", {})
     if args.demo:
         source = DemoSource()
@@ -100,7 +102,12 @@ def run(args) -> int:
     candles = {tf: int(cfg.symbols_cfg["candles"][tf]) for tf in cfg.all_timeframes}
     min_c = cfg.params.get("general", {}).get("min_candles", {})
 
-    symbols = cfg.symbols
+    # universe: daftar statis ATAU hasil scanner (di-refresh per refresh_hours, disimpan di output/universe.json)
+    uni = resolve_universe(cfg, now, out_dir, force_static=bool(args.demo))
+    for w in uni.warnings:
+        log.warning("Universe: %s", w)
+    log.info(uni.describe().replace("**", ""))
+    symbols = list(uni.symbols)
     bench = cfg.symbols_cfg.get("benchmark")
     if bench in symbols:
         symbols = [bench] + [s for s in symbols if s != bench]
@@ -174,10 +181,10 @@ def run(args) -> int:
                             sig.context["chart_tf"] = tf
                 except Exception as exc:  # noqa: BLE001
                     log.exception("%s %s: chart gagal: %s", sig.symbol, tf, exc)
-    md = build_report(signals, analyses, charts, now, chash, source_note, errors)
+    md = build_report(signals, analyses, charts, now, chash, source_note + "  \n" + uni.describe(), errors)
     (latest / "report.md").write_text(md, encoding="utf-8")
     (latest / "signals.json").write_text(json.dumps(to_jsonable({
-        "asof": now, "config_hash": chash, "demo": bool(args.demo), "source_note": source_note,
+        "asof": now, "config_hash": chash, "universe": uni.to_dict(), "demo": bool(args.demo), "source_note": source_note,
         "benchmark": bench, "min_score": cfg.params["scoring"]["min_score"], "signals": signals, "errors": errors}),
         indent=2, ensure_ascii=False), encoding="utf-8")
 

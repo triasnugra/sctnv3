@@ -52,6 +52,8 @@ class Config:
     config_dir: Path = field(default_factory=lambda: Path("config"))
     # Indikator chart: TAMPILAN SAJA, sengaja tidak masuk config_hash (lihat utils.config_hash di main.py)
     chart_ind: Dict[str, Any] = field(default_factory=lambda: copy.deepcopy(CHART_IND_DEFAULTS))
+    # True bila simbol di-override manual (ENGINE_SYMBOLS / --symbols / input workflow) -> scanner dimatikan
+    symbols_overridden: bool = False
 
     @property
     def symbols(self) -> List[str]:
@@ -100,6 +102,7 @@ def load_config(config_dir: str | Path = "config") -> Config:
 
     # override dari environment
     env_syms = os.getenv("ENGINE_SYMBOLS", "").strip()
+    symbols_overridden = bool(env_syms)
     if env_syms:
         symbols_cfg["symbols"] = [s.strip() for s in env_syms.split(",") if s.strip()]
     env_prov = os.getenv("ENGINE_PROVIDERS", "").strip()
@@ -127,4 +130,5 @@ def load_config(config_dir: str | Path = "config") -> Config:
     ci_path = d / "chart_indicators.yaml"
     if ci_path.exists():  # opsional: bila tidak ada, pakai default bawaan
         chart_ind = _deep_merge(chart_ind, _load_yaml(ci_path))
-    return Config(symbols_cfg=symbols_cfg, params=params, risk=risk, config_dir=d, chart_ind=chart_ind)
+    return Config(symbols_cfg=symbols_cfg, params=params, risk=risk, config_dir=d, chart_ind=chart_ind,
+                  symbols_overridden=symbols_overridden)

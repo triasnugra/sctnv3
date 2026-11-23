@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       symbols:
-        description: "Override simbol, pisah koma (kosong = config/symbols.yaml)"
+        description: "Override simbol, pisah koma (kosong = scanner/config symbols.yaml). Override mematikan scanner untuk run ini"
         required: false
         default: ""
       demo:
@@ -56,6 +56,7 @@ jobs:
           INPUT_SYMBOLS: ${{ github.event.inputs.symbols }}
           INPUT_DEMO: ${{ github.event.inputs.demo }}
           LOG_LEVEL: INFO
+          CMC_API_KEY: ${{ secrets.CMC_API_KEY }}          # opsional: hanya untuk sumber coinmarketcap_rank
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -105,6 +106,7 @@ jobs:
           git config user.name "scalp-engine-bot"
           git config user.email "scalp-engine-bot@users.noreply.github.com"
           git add output/signal_log.csv output/forward_test.json 2>/dev/null || true
+          git add output/universe.json output/universe_history.csv 2>/dev/null || true
           git add output/signal_log.legacy*.csv 2>/dev/null || true
           git diff --cached --quiet && echo "Tidak ada perubahan state" && exit 0
           git commit -m "chore: jurnal & forward test $(date -u +'%Y-%m-%d %H:%M') UTC"

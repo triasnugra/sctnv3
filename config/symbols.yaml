@@ -6,13 +6,37 @@ data:
   # untuk semua TF (konsistensi). Binance publik sering diblokir (HTTP 451)
   # dari IP runner GitHub (US) -> binance_rest mencoba beberapa host termasuk
   # data-api.binance.vision, lalu fallback ke exchange lain via ccxt.
-  providers: ["binance_rest", "ccxt:okx", "ccxt:kucoin"]
+  providers: ["binance_rest", "ccxt:okx", "ccxt:kucoin", "ccxt:bitget"]
   retries: 3
   backoff_seconds: 2.0
   timeout_seconds: 20
 
 benchmark: "BTC/USDT"          # dipakai sebagai filter konteks untuk alts
 
+# ---------------------------------------------------------------------
+# SCANNER UNIVERSE (v2): pilih koin otomatis. enabled: false -> pakai daftar `symbols` di bawah apa adanya.
+#   sources (dicoba berurutan sampai ada yang berhasil):
+#     binance_volume      top N pasangan USDT by volume 24 jam di Binance (tanpa API key)
+#     bitget_volume       top N pasangan USDT by volume 24 jam di Bitget  (tanpa API key)
+#     coinmarketcap_rank  peringkat CMC 1..N (butuh secret CMC_API_KEY; key gratis di pro.coinmarketcap.com)
+# Universe di-refresh sekali per refresh_hours & disimpan di output/universe.json (riwayat: universe_history.csv).
+# config_hash memuat ATURAN scanner ini, bukan daftar koin hasilnya. Backtest tetap memakai `symbols` (statis).
+# Override manual (input `symbols` di workflow / --symbols) mematikan scanner untuk run itu.
+# ---------------------------------------------------------------------
+scanner:
+  enabled: true
+  sources: ["binance_volume", "bitget_volume"]
+  top_n: 30
+  quote: "USDT"
+  min_quote_volume_usdt: 5000000     # buang koin dengan volume 24j < 5 juta USDT
+  refresh_hours: 24
+  always_include: []                 # mis. ["BTC/USDT"]; BTC (benchmark) selalu ikut otomatis
+  # exclude: [...]                   # default: stablecoin, wrapped/staked, token emas (lihat src/data/universe.py)
+  cmc:
+    limit: 200                       # ambil 200 teratas CMC lalu saring yang punya pasangan USDT
+    availability: ["binance_volume", "bitget_volume"]
+
+# Daftar statis: dipakai bila scanner mati, saat override manual, untuk backtest, dan sebagai fallback terakhir.
 symbols:
   - "BTC/USDT"
   - "ETH/USDT"

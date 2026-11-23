@@ -273,6 +273,20 @@ function renderMeta() {
   if (ageMin > 150 && !d.demo) bn.append(h("div", { class: "banner" }, `Data sudah ${ago(d.asof)}. Jadwal GitHub Actions bisa tertunda — jangan bertindak atas signal basi; cek chart & harga terkini.`));
   const errs = Object.entries(d.errors || {});
   if (errs.length) bn.append(h("div", { class: "banner err" }, "Gagal ambil/analisis: " + errs.map(([k, v]) => k + " (" + String(v).slice(0, 90) + ")").join("; ")));
+  const u = d.universe;
+  if (u) {
+    const nm = { binance_volume: `Binance top ${u.top_n} volume 24j`, bitget_volume: `Bitget top ${u.top_n} volume 24j`, coinmarketcap_rank: `CoinMarketCap peringkat 1–${u.top_n}` };
+    const label = u.mode === "scanner"
+      ? `Scanner: ${nm[u.source] || u.source} · ${u.count} simbol · ${u.status}` + (u.fetched_at ? ` · refresh ${fmtTs(u.fetched_at)}` : "")
+      : `Daftar statis · ${u.count} simbol`;
+    $("#meta").textContent += " · " + label;
+    if (u.status === "stale_cache" || u.status === "fallback_static")
+      bn.append(h("div", { class: "banner" }, `Universe scanner memakai ${u.status === "stale_cache" ? "cache terakhir" : "daftar statis"} karena sumber gagal: ` + (u.warnings || []).join("; ")));
+    if (u.mode === "scanner" && (u.symbols || []).length)
+      bn.append(h("details", { class: "sub" }, h("summary", {}, `Daftar universe (${u.count})`),
+        h("div", { style: "margin-top:6px;line-height:1.7" }, u.symbols.map(sym => (u.ranks && u.ranks[sym] ? "#" + u.ranks[sym] + " " : "") + sym +
+          (u.volumes_24h_usdt && u.volumes_24h_usdt[sym] ? ` ($${fmtN(u.volumes_24h_usdt[sym] / 1e6, 0)}M)` : "")).join(" · "))));
+  }
 }
 function renderSummary() {
   const g = $("#summary"); clear(g);

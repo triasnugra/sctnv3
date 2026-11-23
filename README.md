@@ -58,6 +58,36 @@ Semua diatur di `config/chart_indicators.yaml` (nyalakan/matikan tiap indikator,
 tidak boleh mengimpor lapisan indikator; `chart_indicators.yaml` tidak masuk `config_hash`; signal identik dengan indikator ON/OFF.
 Hash config sctnv2 sama dengan sctn selama `parameters.yaml`/`symbols.yaml`/`risk.yaml` tidak diubah.
 
+## 2b. Scanner universe otomatis (baru di v2)
+
+Koin yang dianalisis dipilih otomatis (default: **top 30 volume 24 jam di Binance**, cadangan Bitget). Atur di blok `scanner:` pada `config/symbols.yaml`.
+
+| `sources` | Isi | Butuh |
+|---|---|---|
+| `binance_volume` | top N pasangan USDT berdasarkan quoteVolume 24 jam | — |
+| `bitget_volume` | top N pasangan USDT berdasarkan usdtVolume 24 jam | — |
+| `coinmarketcap_rank` | peringkat CMC 1..N (market cap), disaring yang punya pasangan USDT di bursa | secret `CMC_API_KEY` (key gratis di pro.coinmarketcap.com; 1 panggilan/hari jauh di bawah kuota gratis) |
+
+`sources` dicoba berurutan sampai ada yang berhasil. Contoh peringkat CMC: `sources: ["coinmarketcap_rank", "binance_volume"]`.
+Untuk CMC: Settings → Secrets and variables → Actions → New repository secret → `CMC_API_KEY`.
+
+**Aturan yang menjaga validitas forward test**
+- **Refresh sekali per 24 jam** (`refresh_hours`), disimpan di `output/universe.json` (di-commit workflow) → daftar stabil sepanjang hari, bisa direproduksi.
+  Setiap refresh dicatat di `output/universe_history.csv` (waktu, sumber, daftar, koin masuk/keluar) sebagai jejak audit.
+- Peringkat hanya memakai data saat refresh → tidak ada lookahead terhadap sinyal yang dicatat sesudahnya.
+- **`config_hash` memuat ATURAN scanner** (sumber, top_n, filter), bukan daftar koinnya. Koin keluar/masuk tidak mereset forward test; mengubah aturan (mis. top_n 30→20) mereset. Hash sctnv2 kini berbeda dari sctn — memang seharusnya, karena universe-nya berbeda.
+- Dikeluarkan otomatis: stablecoin, token wrapped/staked, token emas, token leveraged, pasangan non-USDT, dan koin dengan volume 24j < `min_quote_volume_usdt` (5 juta USDT).
+- **Bila sumber gagal**: sumber berikutnya → cache terakhir (aturan sama) → daftar statis `symbols`. Fallback selalu ditandai (`status`) di `signals.json`, laporan, dan banner dashboard — tidak pernah diam-diam.
+- **Backtest tetap memakai daftar statis `symbols`**: top-30 pada tanggal lampau tidak diketahui, memakai daftar hari ini akan menimbulkan survivorship bias.
+- Override manual (input `symbols` di workflow / `--symbols`) mematikan scanner untuk run itu. `enabled: false` mengembalikan perilaku daftar statis, dengan `config_hash` identik dengan sctn.
+
+**Catatan membandingkan beberapa mesin (sctn / sctnv2 / sctnv4)**
+- Universe berbeda = sampel berbeda. Bandingkan pada **simbol yang sama** (mis. irisan dengan 8 koin lama), atau samakan universe antar mesin. Opsi `always_include` memaksa koin tertentu selalu ikut.
+- Sinyal antar altcoin berkorelasi kuat dengan BTC, jadi 30 koin bukan 30 sampel independen: interval kepercayaan dari jumlah trade bisa terlalu optimis.
+- Memilih "yang paling valid" dari 3 mesin adalah perbandingan ganda; tetapkan kriteria lolos (gate yang sudah ada) **sebelum** melihat hasil.
+
+**Ongkos:** ±1 menit untuk 30 koin pada data sintetis (data live lebih lama karena unduhan candle); artefak situs ±30 MB per deploy (90 chart). Bila terlalu berat, set `extra_timeframes: []` di `config/chart_indicators.yaml` atau turunkan `top_n`.
+
 ## 3. Struktur repo
 
 ```
@@ -66,8 +96,9 @@ index.html                              # DASHBOARD (GitHub Pages) — statis, t
 .github/workflows/run-backtest.yml      # backtest walk-forward (manual)
 config/{symbols,parameters,risk}.yaml   # SEMUA parameter analisis (tidak ada hard-code) — masuk config_hash
 config/chart_indicators.yaml            # v2: indikator chart (tampilan saja) — TIDAK masuk config_hash
+                                        # symbols.yaml berisi blok `scanner:` (universe otomatis) — aturannya masuk config_hash
 src/data/        fetch_ohlcv.py (Binance REST + ccxt fallback, paging), indicators.py (+RSI, MACD, Supertrend, Volume Profile),
-                 key_levels.py (Spaceman Key Levels), synthetic.py (demo)
+                 key_levels.py (Spaceman Key Levels), universe.py (scanner universe), synthetic.py (demo)
 src/analysis/    range_detector, liquidity_deviation, breakout_retest, fibonacci, monday_range,
                  three_tap_wolf, fvg, obv_confirmation, multi_tf_bias, pipeline
 src/signal/      signal_engine.py (skor + veto), risk_manager.py (stop/target/size/filter/fee)
@@ -76,7 +107,7 @@ src/backtest/    run.py (replay as-of tanpa lookahead)
 src/report/      generate_report.py, chart_generator.py (chart multi-panel), indicator_suite.py (hitung & ringkas indikator)
 src/notify.py    Telegram / Discord (opsional)
 src/site_builder.py  # rakit folder site/ untuk Pages
-tests/           43 unit + smoke test (termasuk invarian 'indikator = tampilan saja')
+tests/           60 unit + smoke test (termasuk invarian 'indikator = tampilan saja')
 output/          signal_log.csv (jurnal), forward_test.json, backtest/ (di-commit); latest/ (tidak di-commit)
 ```
 

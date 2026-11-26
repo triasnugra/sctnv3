@@ -1,26 +1,26 @@
 {
- "updated": "2026-11-25T22:28:10+00:00",
+ "updated": "2026-11-26T04:58:25+00:00",
  "stats": {
-  "n": 7,
+  "n": 8,
   "status": "UNVERIFIABLE",
   "wins": 5,
-  "losses": 2,
-  "win_rate": 0.7142857142857143,
-  "avg_r": 1.3875,
-  "std_r": 1.8426880645766752,
-  "total_r": 9.7125,
-  "profit_factor": 5.562429537767756,
-  "sqn": 1.9921873998491773,
-  "ci_low": 0.022417578433692853,
-  "ci_high": 2.752582421566307,
-  "max_drawdown_r": 1.0785,
-  "weeks": 0.12067460317460317,
+  "losses": 3,
+  "win_rate": 0.625,
+  "avg_r": 1.0712000000000002,
+  "std_r": 1.9263419982665888,
+  "total_r": 8.569600000000001,
+  "profit_factor": 3.6193110615276463,
+  "sqn": 1.5728313761286847,
+  "ci_low": -0.26368690006157425,
+  "ci_high": 2.4060869000615748,
+  "max_drawdown_r": 1.1428999999999991,
+  "weeks": 0.2928125,
   "best_r": 4.0328,
-  "worst_r": -1.0785,
+  "worst_r": -1.1429,
   "readiness": {
    "trades": false,
    "weeks": false,
-   "ci_lower_positive": true,
+   "ci_lower_positive": false,
    "profit_factor": true
   },
   "targets": {
@@ -31,11 +31,11 @@
  },
  "by_trigger": {
   "deviation_reclaim": {
-   "n": 7,
-   "win_rate": 0.7142857142857143,
-   "avg_r": 1.3875,
-   "profit_factor": 5.562429537767756,
-   "total_r": 9.7125
+   "n": 8,
+   "win_rate": 0.625,
+   "avg_r": 1.0712000000000002,
+   "profit_factor": 3.6193110615276463,
+   "total_r": 8.569600000000001
   }
  },
  "by_symbol": {
@@ -47,11 +47,11 @@
    "total_r": 6.0817
   },
   "BTC/USDT": {
-   "n": 1,
-   "win_rate": 1.0,
-   "avg_r": 1.7176,
-   "profit_factor": null,
-   "total_r": 1.7176
+   "n": 2,
+   "win_rate": 0.5,
+   "avg_r": 0.28735,
+   "profit_factor": 1.5028436433633738,
+   "total_r": 0.5747
   },
   "SOXLB/USDT": {
    "n": 1,
@@ -83,10 +83,10 @@
   }
  },
  "counts": {
-  "CLOSED": 7,
-  "OPEN": 1,
-  "WAITING": 2,
-  "CANCELLED": 19
+  "CLOSED": 8,
+  "OPEN": 2,
+  "WAITING": 0,
+  "CANCELLED": 20
  },
  "assumptions": "Simulasi konservatif (stop dulu bila ambigu), fee/slippage kasar, entry pending kedaluwarsa. Bukan hasil eksekusi nyata.",
  "trades": [
@@ -585,25 +585,6 @@
    "reason": "TP1 tercapai sebelum entry terisi"
   },
   {
-   "signal_id": "75616a83da86",
-   "asof": "2026-11-25T22:24:45+00:00",
-   "symbol": "ZEC/USDT",
-   "direction": "SHORT",
-   "trigger": "deviation_reclaim",
-   "tf": "1h",
-   "entry": 766.56,
-   "stop": 774.4017252251065,
-   "tp1": 754.7974121623402,
-   "tp2": 743.0348243246804,
-   "score": 6.0,
-   "status": "WAITING",
-   "outcome": "",
-   "r": null,
-   "fill_time": null,
-   "exit_time": null,
-   "reason": ""
-  },
-  {
    "signal_id": "66f8f3b58089",
    "asof": "2026-11-25T22:24:45+00:00",
    "symbol": "BTC/USDT",
@@ -615,12 +596,31 @@
    "tp1": 59751.947,
    "tp2": 59117.894,
    "score": 6.0,
-   "status": "WAITING",
+   "status": "CLOSED",
+   "outcome": "LOSS",
+   "r": -1.1429,
+   "fill_time": "2026-11-25 23:30:00+00:00",
+   "exit_time": "2026-11-26 00:00:00+00:00",
+   "reason": ""
+  },
+  {
+   "signal_id": "75616a83da86",
+   "asof": "2026-11-25T22:24:45+00:00",
+   "symbol": "ZEC/USDT",
+   "direction": "SHORT",
+   "trigger": "deviation_reclaim",
+   "tf": "1h",
+   "entry": 766.56,
+   "stop": 774.4017252251065,
+   "tp1": 754.7974121623402,
+   "tp2": 743.0348243246804,
+   "score": 6.0,
+   "status": "CANCELLED",
    "outcome": "",
    "r": null,
    "fill_time": null,
    "exit_time": null,
-   "reason": ""
+   "reason": "TP1 tercapai sebelum entry terisi"
   },
   {
    "signal_id": "ce4f6b5394b1",
@@ -636,8 +636,27 @@
    "score": 10.0,
    "status": "OPEN",
    "outcome": "",
-   "r": -0.1345,
+   "r": -0.6223,
    "fill_time": "2026-11-25 22:24:45+00:00",
+   "exit_time": null,
+   "reason": ""
+  },
+  {
+   "signal_id": "68852d1eaa08",
+   "asof": "2026-11-26T04:55:10+00:00",
+   "symbol": "CRCLB/USDT",
+   "direction": "SHORT",
+   "trigger": "deviation_reclaim",
+   "tf": "15m",
+   "entry": 49.27,
+   "stop": 49.61489,
+   "tp1": 48.752665,
+   "tp2": 48.235330000000005,
+   "score": 7.0,
+   "status": "OPEN",
+   "outcome": "",
+   "r": -0.1429,
+   "fill_time": "2026-11-26 04:55:10+00:00",
    "exit_time": null,
    "reason": ""
   }

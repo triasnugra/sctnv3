@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T08:10:22+00:00",
+ "updated": "2026-11-27T18:55:06+00:00",
  "stats": {
   "n": 11,
   "status": "UNVERIFIABLE",
@@ -106,7 +106,7 @@
  "counts": {
   "CLOSED": 11,
   "OPEN": 0,
-  "WAITING": 0,
+  "WAITING": 2,
   "CANCELLED": 21
  },
  "assumptions": "Simulasi konservatif (stop dulu bila ambigu), fee/slippage kasar, entry pending kedaluwarsa. Bukan hasil eksekusi nyata.",
@@ -717,6 +717,44 @@
    "r": -1.1429,
    "fill_time": "2026-11-27 02:00:00+00:00",
    "exit_time": "2026-11-27 02:15:00+00:00",
+   "reason": ""
+  },
+  {
+   "signal_id": "a5fccb0d49f3",
+   "asof": "2026-11-27T18:51:36+00:00",
+   "symbol": "BTC/USDT",
+   "direction": "SHORT",
+   "trigger": "deviation_reclaim",
+   "tf": "1h",
+   "entry": 60386.0,
+   "stop": 60808.702,
+   "tp1": 58792.37,
+   "tp2": 58581.019,
+   "score": 7.0,
+   "status": "WAITING",
+   "outcome": "",
+   "r": null,
+   "fill_time": null,
+   "exit_time": null,
+   "reason": ""
+  },
+  {
+   "signal_id": "2e9ebcd85343",
+   "asof": "2026-11-27T18:51:36+00:00",
+   "symbol": "ETH/USDT",
+   "direction": "SHORT",
+   "trigger": "breakout_retest",
+   "tf": "1h",
+   "entry": 1696.5,
+   "stop": 1708.3755,
+   "tp1": 1634.03,
+   "tp2": 1628.09225,
+   "score": 6.0,
+   "status": "WAITING",
+   "outcome": "",
+   "r": null,
+   "fill_time": null,
+   "exit_time": null,
    "reason": ""
   }
  ]

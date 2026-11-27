@@ -1,20 +1,20 @@
 {
- "updated": "2026-11-26T23:47:01+00:00",
+ "updated": "2026-11-27T08:10:22+00:00",
  "stats": {
-  "n": 9,
+  "n": 11,
   "status": "UNVERIFIABLE",
   "wins": 6,
-  "losses": 3,
-  "win_rate": 0.6666666666666666,
-  "avg_r": 1.1696333333333335,
-  "std_r": 1.8259645115664214,
-  "total_r": 10.526700000000002,
-  "profit_factor": 4.217501604670355,
-  "sqn": 1.921669330248843,
-  "ci_low": -0.023330147556728464,
-  "ci_high": 2.3625968142233953,
-  "max_drawdown_r": 1.1428999999999991,
-  "weeks": 0.3315443121693122,
+  "losses": 5,
+  "win_rate": 0.5454545454545454,
+  "avg_r": 0.7499363636363637,
+  "std_r": 1.8812870861581585,
+  "total_r": 8.249300000000002,
+  "profit_factor": 2.4866014308626627,
+  "sqn": 1.3221041876732702,
+  "ci_low": -0.361833258176922,
+  "ci_high": 1.8617059854496496,
+  "max_drawdown_r": 2.277399999999999,
+  "weeks": 0.4435267857142857,
   "best_r": 4.0328,
   "worst_r": -1.1429,
   "readiness": {
@@ -31,11 +31,11 @@
  },
  "by_trigger": {
   "deviation_reclaim": {
-   "n": 9,
-   "win_rate": 0.6666666666666666,
-   "avg_r": 1.1696333333333335,
-   "profit_factor": 4.217501604670355,
-   "total_r": 10.526700000000002
+   "n": 11,
+   "win_rate": 0.5454545454545454,
+   "avg_r": 0.7499363636363637,
+   "profit_factor": 2.4866014308626627,
+   "total_r": 8.249300000000002
   }
  },
  "by_symbol": {
@@ -81,18 +81,32 @@
    "profit_factor": null,
    "total_r": 2.0549
   },
+  "TRX/USDT": {
+   "n": 1,
+   "win_rate": 0.0,
+   "avg_r": -1.1345,
+   "profit_factor": 0.0,
+   "total_r": -1.1345
+  },
   "CRCLB/USDT": {
    "n": 1,
    "win_rate": 1.0,
    "avg_r": 1.9571,
    "profit_factor": null,
    "total_r": 1.9571
+  },
+  "AAVE/USDT": {
+   "n": 1,
+   "win_rate": 0.0,
+   "avg_r": -1.1429,
+   "profit_factor": 0.0,
+   "total_r": -1.1429
   }
  },
  "counts": {
-  "CLOSED": 9,
-  "OPEN": 1,
-  "WAITING": 1,
+  "CLOSED": 11,
+  "OPEN": 0,
+  "WAITING": 0,
   "CANCELLED": 21
  },
  "assumptions": "Simulasi konservatif (stop dulu bila ambigu), fee/slippage kasar, entry pending kedaluwarsa. Bukan hasil eksekusi nyata.",
@@ -641,11 +655,11 @@
    "tp1": 0.29991757500000005,
    "tp2": 0.2965351500000001,
    "score": 10.0,
-   "status": "OPEN",
-   "outcome": "",
-   "r": -0.4893,
+   "status": "CLOSED",
+   "outcome": "LOSS",
+   "r": -1.1345,
    "fill_time": "2026-11-25 22:24:45+00:00",
-   "exit_time": null,
+   "exit_time": "2026-11-27 03:00:00+00:00",
    "reason": ""
   },
   {
@@ -698,11 +712,11 @@
    "tp1": 92.28,
    "tp2": 91.94554,
    "score": 7.0,
-   "status": "WAITING",
-   "outcome": "",
-   "r": null,
-   "fill_time": null,
-   "exit_time": null,
+   "status": "CLOSED",
+   "outcome": "LOSS",
+   "r": -1.1429,
+   "fill_time": "2026-11-27 02:00:00+00:00",
+   "exit_time": "2026-11-27 02:15:00+00:00",
    "reason": ""
   }
  ]
